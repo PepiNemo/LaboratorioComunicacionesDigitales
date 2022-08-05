@@ -1,0 +1,100 @@
+    % mt: Onda sinusoidal  ;  SNt : PAM muestro natural   ; SIt : PAM muestreo instantaneo
+fc=1000; %Frecuencia de la sinusoidal
+fm=100000; %Frecuencia de muestreo 1/1e5Hz
+fs=6000;   %Frecuencia de la cuadrada
+t=0:1/fm:2/fc;% tiempo muestrado a 1e5 HZ, por 5 periodos de sinusoidal
+to=0:1/fm:1/fc;
+%d=0.7e-2*fs; %(tau / Ts) <=> (tau * fs) 
+d=80;
+mt=cos(2*pi*fc*t); %Onda analogica sinusoidal
+FFTmt = fft(mt);
+vaina=length(mt);
+p1=FFTmt(0:,1:1);
+RECt=0.5*square(2*pi*fs*t,d)+0.5;%Forma de onda de conmutación de ondas rectangulares
+SNt=mt.*RECt;
+SIt = SNt;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%  PAM mueSNtreo inSNtantaneo %%%%%%%%%%%%%%%%%%%%
+for i = 2: length(t)
+    if RECt(i) == 1 && RECt(i-1) == 0 %if the rising edge is deteRECt_encoding    
+        SIt(i) = RECt(i) * mt(i); %sampling occurs
+    elseif RECt(i) == 1 && RECt(i-1) == 1 %and while the carrier signal is 1
+        SIt(i) = SIt(i-1); %the value of y1 remains conSNtant
+    else 
+        SIt(i) = 0; %otherwise, SNt is zero
+    end
+end
+
+figure(1)
+subplot(2,2,1); plot(t,mt,'-o'); title('señal de mensaje'); xlabel('T'); ylabel('amplitud');
+subplot(2,2,2); plot(to,p1,'-o'); title('Transformada Fourier Señal'); xlabel('T'); 
+xlim([-((3/fc)*0.4) (3/fc)*1.1]); ylabel('amplitud');    
+
+subplot(2,2,3); plot(t,SNt,'-o'); title('Pam muestreo Natural'); xlabel('T'); ylabel('amplitud');
+subplot(2,2,4); plot(t,SIt,'-o'); title('Pam muestreo InSNtantaneo'); xlabel('T'); ylabel('amplitud');
+
+
+%%%%%%%%%%%%%%%%%1.-Que pasa si se disminuye la frecuencia de muestre?%%%%%%%%%%%%
+%La funcion puede suavidad, y comienza a tener una forma de funcion triangular
+fmMin=10000;
+t1=0:1/fmMin:2/fc;
+mt1=cos(2*pi*fc*t1); %Onda analogica sinusoidal
+FFTmt1 = fft(mt1);
+RECt1=0.5*square(2*pi*fs*t1,d)+0.5;%Forma de onda de conmutación de ondas rectangulares
+SNt1=mt1.*RECt1;
+
+SIt1 = SNt1;
+%%%%%%%%%%%%%%%%%%%%%%%  PAM mueSNtreo inSNtantaneo %%%%%%%%%%%%%%%%%%%%
+for i = 2: length(t1)
+    if RECt1(i) == 1 && RECt1(i-1) == 0 %if the rising edge is deteRECt_encoding    
+        SIt1(i) = RECt1(i) * mt1(i); %sampling occurs
+    elseif RECt1(i) == 1 && RECt1(i-1) == 1 %and while the carrier signal is 1
+        SIt1(i) = SIt1(i-1); %the value of y1 remains conSNtant
+    else 
+        SIt1(i) = 0; %otherwise, SNt is zero
+    end
+end
+
+figure(2)
+subplot(4,2,1); plot(t,mt,'-o'); title('señal de mensaje'); xlabel('T'); ylabel('amplitud');
+subplot(4,2,2); plot(t,FFTmt,'-o'); title('Transformada Fourier Señal'); xlabel('T'); 
+xlim([-((3/fc)*0.4) (3/fc)*1.1]); ylabel('amplitud');    
+
+subplot(4,2,3); plot(t,SNt,'-o'); title('Pam muestreo Natural'); xlabel('T'); ylabel('amplitud');
+subplot(4,2,4); plot(t,SIt,'-o'); title('Pam muestreo InSNtantaneo'); xlabel('T'); ylabel('amplitud');
+subplot(4,2,5); plot(t1,mt1,'-o'); title('señal de mensaje muestro menor'); xlabel('T'); ylabel('amplitud');
+subplot(4,2,6); plot(t1,FFTmt1,'-o'); title('Transformada Fourier Señal muestro menor'); xlabel('T'); 
+xlim([-((3/fc)*0.4) (3/fc)*1.1]); ylabel('amplitud');    
+
+subplot(4,2,7); plot(t1,SNt1,'-o'); title('Pam muestreo Natural muestro menor'); xlabel('T'); ylabel('amplitud');
+subplot(4,2,8); plot(t1,SIt1,'-o'); title('Pam muestreo InSNtantaneo muestro menor'); xlabel('T'); ylabel('amplitud');
+
+
+%2.-¿Hay algún lı́mite? Si lo hay, ¿Cuál es?
+%%%%%%EL limite es que la frecuencia de muestreo tiene que ser el doble del componente de interés de frecuencia más alto en la señal medida, y esta frecuencia se denomina Frecuencia de Nyquist. Teorema de Teorema de Muestreo de Nyquist
+
+%3.¿Porque existe este lı́mite?
+%%Porque a esta frecuencia de muestro, la señal se asemeja a una señal triangular.
+
+%4.¿Que pasa si supera este lı́mite?
+%%Comienza generarse Aliasing, que es que los componentes de frecuencias falsas mas bajas aparecen en los datos muestreados, y ya la señal graficada, resulta en otra señal.
+
+%%%%%%%%%%%%%%%%%1¿Por qué la transformada de Fourier tiene esa forma para cada una de las señales ?%%%%%%%%%%%%
+
+FFTsn=fft(SNt);
+FFTsi=fft(SIt);
+
+figure(3)
+subplot(3,2,1); plot(t,mt,'-o'); title('señal de mensaje'); xlabel('T'); ylabel('amplitud');
+subplot(3,2,2); plot(t,FFTmt,'-o'); title('Transformada Fourier Señal'); xlabel('T'); 
+xlim([-((3/fc)*0.4) (3/fc)*1.1]); ylabel('amplitud');    
+
+subplot(3,2,3); plot(t,SNt,'-o'); title('Pam muestreo Natural'); xlabel('T'); ylabel('amplitud');
+subplot(3,2,4); plot(t,FFTsn,'-o'); title('Transformada Fourier Pam Natural'); xlabel('T'); 
+xlim([-((3/fc)*0.4) (3/fc)*1.1]); ylabel('amplitud')
+subplot(3,2,5); plot(t,SIt,'-o'); title('Pam muestreo Instantaneo'); xlabel('T'); ylabel('amplitud');
+subplot(3,2,6); plot(t,FFTsi,'-o'); title('Transformada Fourier Pam Instantaneo'); xlabel('T'); 
+xlim([-((3/fc)*0.4) (3/fc)*1.1]); ylabel('amplitud')
+
+%Porque al modularla, se reduce el ancho de banda, para que sea mas facil su transporte

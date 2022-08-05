@@ -1,0 +1,12 @@
+fc=1000; %Frecuencia de la sinusoidal
+fm=100000; %Frecuencia de muestreo 1/1e5Hz
+fs=2000;   %
+t=0:1/fm:10/fc;% 1e5 HZ muestrada, por 10 periodos d
+d=1*fs;
+
+mt=cos(2*pi*fc*t); %moduladora
+ct=0.5*square(2*pi*fs*t)+0.5; %portadora
+st=mt.*ct;
+figure(1)
+subplot(2,1,1); plot(t,mt); title('señal de mensaje'); xlabel('T'); ylabel('amplitud');
+subplot(2,1,2); plot(t,ct); title('señal de portadora'); xlabel('T'); ylabel('amplitud');
